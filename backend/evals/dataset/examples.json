@@ -1,0 +1,173 @@
+[
+  {
+  "fixture_id": "menu-1",
+  "image_path": "evals/fixtures/menu-1.png",
+  "expected_item_count": 6,
+  "expected_jp_names": [
+    "おまかせ天丼",
+    "チョイス天丼",
+    "ごちそう天丼",
+    "お子さまチョイス天丼",
+    "天ぷら盛り合わせ",
+    "さんかつチョイス盛り"
+  ],
+  "expected_en_titles": [
+    "Chef’s Choice Tempura Rice Bowl",
+    "Customizable Tempura Rice Bowl",
+    "Deluxe Tempura Rice Bowl",
+    "Kids’ Custom Tempura Rice Bowl",
+    "Tempura Assortment",
+    "Sankatsu Choice Platter"
+  ],
+  "difficulty_tags": [
+    "partial_visibility",
+    "angled_text",
+    "complex_background"
+  ],
+  "notes": "handwritten tempura menu with some occlusion and perspective distortion"
+},
+{
+  "fixture_id": "menu-2",
+  "image_path": "evals/fixtures/menu-2.png",
+  "expected_item_count": 1,
+  "expected_jp_names": ["イカのかき揚げ天丼"],
+  "difficulty_tags": [
+
+    "hard"
+    
+  ],
+  "notes": "not a good picture, hand written"
+},
+{
+  "fixture_id": "menu-3",
+  "image_path": "evals/fixtures/menu-3.png",
+  "expected_item_count": 1,
+  "expected_jp_names": [
+    "真鯛と野菜の天丼"
+  ],
+  "expected_en_titles": [
+    "Red Sea Bream and Vegetable Tempura Rice Bowl"
+  ],
+  "difficulty_tags": [
+    "handwritten_font",
+    "vertical_text",
+    "single_item_flyer",
+    "glare"
+  ],
+  "notes": "Handwritten vertical menu for a weekly limited lunch special. The main item is a 'Red Sea Bream and Vegetable Tempura Rice Bowl' priced at 1,150 yen, served with miso soup and pickles."
+},
+{
+  "fixture_id": "menu-4",
+  "image_path": "evals/fixtures/menu-4.png",
+  "expected_item_count": 5,
+  "expected_jp_names": [
+    "天丼",
+    "天婦羅定食",
+    "さしみ定食",
+    "焼魚定食",
+    "ミックスフライ定食"
+  ],
+  "expected_en_titles": [
+    "Tempura Rice Bowl",
+    "Tempura Set Meal",
+    "Sashimi Set Meal",
+    "Grilled Fish Set Meal",
+    "Mixed Fry Set Meal"
+  ],
+  "difficulty_tags": [
+    "spaced_text",
+    "simple_layout"
+  ],
+  "notes": "A simple printed menu for a Japanese restaurant listing several lunch set options. The text uses wide spacing between characters in some dish names."
+},
+{
+  "fixture_id": "menu-5",
+  "image_path": "evals/fixtures/menu-5.png",
+  "expected_item_count": 1,
+  "expected_jp_names": [
+    "天ぷら定食"
+  ],
+  "expected_en_titles": [
+    "Tempura Set Meal"
+  ],
+  "difficulty_tags": [
+    "handwritten_font",
+    "angled_text",
+    "outdoor_sign"
+  ],
+  "notes": "A handwritten sign for a 'Tempura Set Meal' (天ぷら定食) displayed outside a restaurant. The menu lists the specific items included in the set: shrimp, hairtail, whiting, scallop, three kinds of vegetables, salad, rice, miso soup, and pickles for 1,500 yen."
+},
+{
+  "fixture_id": "menu-6",
+  "image_path": "evals/fixtures/menu-6.png",
+  "expected_item_count": 6,
+  "expected_jp_names": [
+    "紅しょうがかきあげ",
+    "桜えびかきあげ",
+    "海鮮かきあげ",
+    "きす",
+    "いか",
+    "えび"
+  ],
+  "expected_en_titles": [
+    "Red Pickled Ginger Kakiage",
+    "Sakura Shrimp Kakiage",
+    "Seafood Kakiage",
+    "Japanese Sillago",
+    "Squid",
+    "Shrimp"
+  ],
+  "difficulty_tags": [
+    "handwritten_font",
+    "vertical_text",
+    "multiple_slips"
+  ],
+  "notes": "Series of handwritten menu slips for individual tempura items pinned to a wall. Each slip contains the item name and its price written vertically."
+},
+{
+  "fixture_id": "menu-7",
+  "image_path": "evals/fixtures/menu-7.png",
+  "expected_item_count": 4,
+  "expected_jp_names": [
+    "天丼",
+    "天ぷら定食",
+    "刺身 定食",
+    "鯛 茶漬"
+  ],
+  "expected_en_titles": [
+    "Tempura Rice Bowl",
+    "Tempura Set Meal",
+    "Sashimi Set Meal",
+    "Sea Bream Chazuke"
+  ],
+  "difficulty_tags": [
+    "handwritten_font",
+    "simple_layout"
+  ],
+  "notes": "Handwritten lunch menu with four options. Each item has a base price and a tax-included price listed in parentheses."
+},
+{
+  "fixture_id": "menu-8",
+  "image_path": "evals/fixtures/menu-8.png",
+  "expected_item_count": 4,
+  "expected_jp_names": [
+    "自家焙煎コーヒー",
+    "和風かつおマヨサンド",
+    "寿司屋のだし巻サンド",
+    "自家製なめらかプリン"
+  ],
+  "expected_en_titles": [
+    "Home-roasted Coffee",
+    "Japanese-style Bonito Mayo Sandwich",
+    "Sushi Shop-style Dashi Omelet Sandwich",
+    "Homemade Smooth Pudding"
+  ],
+  "difficulty_tags": [
+    "handwritten_font",
+    "outdoor_sign",
+    "glare",
+    "angled_text"
+  ],
+  "notes": "Handwritten chalkboard menu featuring recommended items like home-roasted coffee, specialty sandwiches, and homemade pudding. The sign is located outdoors and shows some glare from sunlight."
+}
+]

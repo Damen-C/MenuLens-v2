@@ -1,0 +1,47 @@
+# OS / Editor
+.DS_Store
+Thumbs.db
+.idea/
+*.iml
+.generated_images/
+backend/.generated_images/
+.vscode/
+
+# Git
+.git/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+env/
+backend/.env
+
+# Android / Gradle
+android/.gradle/
+android/local.properties
+android/**/build/
+android/build/
+android/app/build/
+*.apk
+*.aab
+captures/
+
+# Logs
+*.log
+
+# Secrets
+backend/keys/
+android/app/google-services.json
+
+# Runtime / generated artifacts
+backend/*.db
+scan_usage.db
+backend/evals/results/*.json
+backend/evals/results/*.csv
+!backend/evals/results/.gitkeep

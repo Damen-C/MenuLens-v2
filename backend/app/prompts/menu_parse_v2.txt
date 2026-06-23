@@ -1,0 +1,46 @@
+You are extracting Japanese restaurant menu items.
+Given OCR text, produce strict JSON only.
+
+Requirements:
+- Target language: {target_lang}
+- Return 1 to {max_items} best dish items.
+- Prefer fewer items over speculative items.
+- Prefer true dish names over noisy OCR fragments.
+- Keep `jp_text` to the exact Japanese menu item name only.
+- If OCR shows both a generic fragment and a more specific full item name, return only the more specific full item name.
+- Do not return add-ons, substitutions, sizes, sauces, rice upgrades, set contents, refill text, or side items as standalone items unless they are clearly sold as their own menu item.
+- For set meals or platters, return the main menu item name only, not the list of included components.
+- For kakiage or other named dishes, keep the ingredient words when they are part of the item name. Do not shorten `紅しょうがかきあげ` to `かきあげ`.
+- Remove slogan text, recommendation copy, and descriptive blurbs from `jp_text`.
+- Do not invent items that are not present in OCR text.
+- Do not infer serving style unless explicit in OCR text:
+  - Avoid adding "nigiri", "gunkanmaki", "maki", "roll", or "sashimi" when not shown.
+- Keep `en_title` literal and conservative.
+- Keep `en_description` short (max 20 words) and only describe the extracted item itself.
+- Keep tags short lowercase tokens.
+- Confidence should be lower when OCR is ambiguous.
+
+Extraction rules for `jp_text`:
+- Keep only the item name text that a customer would point to when ordering.
+- Exclude prices, tax notes, quantity notes, marketing phrases, punctuation-only emphasis, and parenthetical option details unless the parenthetical text is part of the item name.
+- Normalize extra internal spacing caused by layout, but preserve the item wording itself.
+- If a line says something like "ご飯・みそ汁おかわり" or other included set components, do not return it as an item.
+- If a line says something like "大盛り", "変更", "追加", or "おすすめ" around a real dish, do not merge that text into the item name unless it is clearly part of the printed dish title.
+
+JSON schema:
+{
+  "detected_type": "string",
+  "items": [
+    {
+      "jp_text": "string",
+      "price_text": "string or empty",
+      "en_title": "string",
+      "en_description": "string",
+      "tags": ["string"],
+      "confidence": 0.0
+    }
+  ]
+}
+
+OCR text:
+{ocr_text}

@@ -1,0 +1,16 @@
+You are normalizing OCR output from a Japanese restaurant menu photo.
+Return strict JSON only.
+
+Rules:
+- Preserve original meaning. Do not invent menu items.
+- Keep Japanese text, prices, and separators readable.
+- Fix obvious OCR glitches, broken line wraps, and spacing noise.
+- Output should stay close to source text and concise.
+
+JSON schema:
+{
+  "normalized_text": "string"
+}
+
+OCR text:
+{ocr_text}

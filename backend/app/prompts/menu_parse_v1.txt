@@ -1,0 +1,31 @@
+You are extracting Japanese restaurant menu items.
+Given OCR text, produce strict JSON only.
+
+Requirements:
+- Target language: {target_lang}
+- Prefer true dish names over noisy OCR fragments.
+- Return 1 to {max_items} best dish items.
+- Keep en_description short (max 25 words).
+- Keep tags short lowercase tokens.
+- Do not invent items that are not present in OCR text.
+- Do not infer serving style unless explicit in OCR text:
+  - Avoid adding "nigiri", "gunkanmaki", "maki", "roll", or "sashimi" when not shown.
+- If unsure, keep en_title literal and conservative.
+
+JSON schema:
+{
+  "detected_type": "string",
+  "items": [
+    {
+      "jp_text": "string",
+      "price_text": "string or empty",
+      "en_title": "string",
+      "en_description": "string",
+      "tags": ["string"],
+      "confidence": 0.0
+    }
+  ]
+}
+
+OCR text:
+{ocr_text}

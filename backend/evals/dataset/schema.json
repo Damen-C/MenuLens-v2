@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MenuLens Eval Dataset",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "fixture_id",
+      "expected_item_count",
+      "expected_jp_names"
+    ],
+    "properties": {
+      "fixture_id": {
+        "type": "string",
+        "minLength": 1
+      },
+      "image_path": {
+        "type": "string",
+        "minLength": 1
+      },
+      "ocr_text": {
+        "type": "string",
+        "minLength": 1
+      },
+      "expected_item_count": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "expected_jp_names": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "expected_en_titles": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "default": []
+      },
+      "difficulty_tags": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "default": []
+      },
+      "notes": {
+        "type": "string"
+      },
+      "enabled": {
+        "type": "boolean",
+        "default": true
+      }
+    },
+    "anyOf": [
+      {
+        "required": [
+          "image_path"
+        ]
+      },
+      {
+        "required": [
+          "ocr_text"
+        ]
+      }
+    ]
+  }
+}

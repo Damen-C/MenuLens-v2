@@ -1,93 +1,30 @@
-# MenuLens
+# MenuLens v2
 
-MenuLens is an Android app plus FastAPI backend for scanning Japanese menus and returning English-friendly dish results.
+MenuLens v2 is an Android app and FastAPI backend for reading Japanese restaurant menus. Take or upload a menu photo, reveal dishes one by one, and get concise English guidance with an optional AI-generated reference image after reveal.
 
-## Demo Video
+The design direction is intentionally quiet: warm paper surfaces, charcoal text, restrained vermilion, and a minimal Japanese editorial feel.
 
-[![Watch MenuLens demo](docs/menulens-0225-ezgif.gif)](https://example.com/menulens-demo)
+## What it does
 
-## Project Status
+- Scans Japanese menu photos with Google Cloud Vision OCR.
+- Uses Gemini to extract dish names, prices, tags, and short English explanations.
+- Keeps locked dishes private: Japanese names and prices stay visible, but English details and images are hidden until reveal.
+- Generates a realistic AI reference image only after a dish is revealed.
+- Caches generated dish images locally in development or in Google Cloud Storage in production.
+- Shows a staff-facing screen with Japanese-only ordering text.
+- Enforces scan/reveal quotas with local subscription/debug controls.
 
-This project is effectively complete.
+## Project structure
 
-Current implemented state:
-
-- Android client built with Kotlin, Compose, and an MVVM-style flow
-- FastAPI backend with `POST /v1/scan_menu`
-- OCR via Google Cloud Vision
-- Dish extraction, translation, and short description generation via Gemini
-- On-demand Gemini dish-image generation after reveal, with signed tokens and two-level caching
-- Firebase anonymous auth wiring and backend token verification scaffold
-- Monthly scan quota enforcement with idempotent request handling
-- Offline eval dataset, runner, scoring, and run ledger for prompt iteration
-
-Current default prompt versions:
-
-- `menu_parse_v2`
-- `ocr_normalize_v1`
-
-## Repo Structure
-
-- `android/` Android application
-- `backend/` FastAPI service and eval tooling
-- `docs/` worklogs, product notes, and reference docs
-
-## Backend Pipeline
-
-The backend pipeline is:
-
-1. OCR the uploaded menu image with Google Cloud Vision.
-2. Optionally normalize OCR text with Gemini.
-3. Extract Japanese menu items with a versioned Gemini prompt.
-4. Translate and summarize dishes for English-speaking users.
-5. Return empty legacy `preview.images` arrays plus short-lived image-generation tokens.
-6. After a reveal, generate one labeled 4:3 WebP reference image and cache it locally or in Cloud Storage.
-
-## Evaluation Setup
-
-MenuLens includes an offline eval loop under `backend/evals/`:
-
-- Dataset: `backend/evals/dataset/examples.json`
-- Fixtures: `backend/evals/fixtures/`
-- Runner: `python -m evals.run_evals`
-- Reports: `backend/evals/results/eval_report_*.json`
-- Run ledger: `backend/evals/results/eval_runs.csv`
-
-Prompt versions are tracked in both the JSON report and CSV ledger.
-
-Current adopted eval result for `menu_parse_v2` from `backend/evals/results/eval_report_20260506T013708Z.json`:
-
-- Dataset size: `8`
-- Model: `gemini-2.5-flash`
-- Parse success rate: `1.0`
-- Item recall: `0.8708`
-- Item precision proxy: `0.8430`
-- Hallucinated item rate: `0.1570`
-- Coverage ratio: `1.0`
-- Mean latency: `20041.9 ms`
-- P95 latency: `45657.8 ms`
-
-Compared with the prior `menu_parse_v1` baseline, `v2` reduced hallucinated items and improved precision without reducing recall, so it is now the default app prompt.
-
-Run evals locally:
-
-```powershell
-cd d:\Project_MenuLens\backend
-.\.venv\Scripts\python.exe -m evals.run_evals
+```text
+android/   Android app built with Kotlin and Jetpack Compose
+backend/   FastAPI service, Gemini/Vision integration, image generation, tests
+docs/      Product notes, request flow, theme notes, and worklogs
 ```
 
-Run evals with a specific prompt version:
+## Backend setup
 
-```powershell
-cd d:\Project_MenuLens\backend
-$env:MENU_PARSE_PROMPT_VERSION = "menu_parse_v2"
-.\.venv\Scripts\python.exe -m evals.run_evals
-Remove-Item Env:MENU_PARSE_PROMPT_VERSION
-```
-
-## Backend Setup
-
-Python `3.12` is recommended.
+Python 3.12 is recommended.
 
 ```powershell
 cd backend
@@ -97,69 +34,121 @@ pip install -r requirements.txt
 copy .env.example .env
 ```
 
-Required keys in `backend/.env`:
+Edit `backend/.env` and configure at least:
 
-- `GOOGLE_CLOUD_VISION_API_KEY`
-- `GEMINI_API_KEY`
+```env
+GOOGLE_CLOUD_VISION_API_KEY=...
+GEMINI_API_KEY=...
+IMAGE_TOKEN_SECRET=replace-with-a-long-random-secret
+```
 
-Common optional settings:
+For live Gemini image generation:
 
-- `GEMINI_MODEL` default `gemini-2.5-flash`
-- `OCR_PIPELINE_MODE=hybrid|vision_only`
-- `MAX_MENU_ITEMS=1..20`
-- `IMAGE_GENERATION_ENABLED=false|true`
-- `GEMINI_IMAGE_MODEL=gemini-3.1-flash-image`
-- `IMAGE_TOKEN_SECRET` (at least 32 random characters)
-- `IMAGE_PROMPT_VERSION=dish_reference_v1`
-- `GENERATED_IMAGE_BUCKET` for production GCS caching; leave empty for the local cache
+```env
+IMAGE_GENERATION_ENABLED=true
+GEMINI_IMAGE_MODEL=gemini-3.1-flash-image
+IMAGE_PROMPT_VERSION=dish_reference_v1
+```
 
-Run backend:
+Run the local backend:
 
 ```powershell
 cd backend
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 API docs:
 
-- `http://127.0.0.1:8000/docs`
+```text
+http://127.0.0.1:8000/docs
+```
 
-## Android Setup
+## Android setup
 
 Requirements:
 
-- JDK `17`
+- JDK 17
 - Android SDK
-- Emulator or device
+- Android Studio, emulator, or physical Android device
 
-Install debug build:
+The backend URL is configured in:
+
+```text
+android/app/build.gradle.kts
+```
+
+Use one of these values for `API_BASE_URL`:
+
+```text
+Emulator:        http://10.0.2.2:8000/
+Physical device: http://<your-computer-lan-ip>:8000/
+Cloud Run:       https://<your-cloud-run-service-url>/
+```
+
+Install a debug build:
 
 ```powershell
 cd android
-.\gradlew installDebug
+.\gradlew.bat installDebug
 ```
 
-Backend base URL is configured in `android/app/build.gradle.kts`.
+## Tests
 
-Use:
+Backend:
 
-- Emulator: `http://10.0.2.2:8000/`
-- Physical device: `http://<your-pc-lan-ip>:8000/`
-- Cloud Run deployment: `https://menulens-api-gpw37tchwq-an.a.run.app/`
+```powershell
+cd backend
+.\.venv\Scripts\python.exe -m pytest -q
+```
 
-## Deployment Notes
+Android unit tests:
 
-The backend was set up for Cloud Run in `asia-northeast1`.
+```powershell
+cd android
+.\gradlew.bat testDebugUnitTest
+```
 
-Operational notes:
+Android instrumentation build:
 
-- Cloud Run can scale to zero when idle
-- Main variable costs come from Vision, Gemini parsing, and cache-miss image generations
-- SQLite quota storage is acceptable for local or single-instance use, but not a true shared production store
-- Pro billing is not connected
+```powershell
+cd android
+.\gradlew.bat assembleDebugAndroidTest
+```
 
-## Documents
+## Image generation flow
 
-- [LLOps Planning.md](LLOps%20Planning.md)
-- [docs/WORKLOG_2026-05-06.md](docs/WORKLOG_2026-05-06.md)
-- [docs/WORKLOG_2026-04-11.md](docs/WORKLOG_2026-04-11.md)
+Menu scans do not fetch external food photos. Instead:
+
+1. `POST /v1/scan_menu` returns dish text and a short-lived signed image-generation token per valid dish.
+2. Locked dishes never request images.
+3. After reveal, the Android detail screen opens immediately.
+4. The app calls `POST /v1/generate_dish_image` with the signed token.
+5. The backend returns compressed WebP bytes.
+6. The app stores the image in cache and reuses it when reopening the dish.
+
+Generated images are always labeled:
+
+```text
+AI-generated reference · Actual presentation may vary.
+```
+
+## Deployment notes
+
+The backend is designed for Google Cloud Run.
+
+Recommended production settings:
+
+- Keep `IMAGE_GENERATION_ENABLED` behind an environment flag for rollback.
+- Use `GENERATED_IMAGE_BUCKET` for Cloud Storage image caching.
+- Use a strong `IMAGE_TOKEN_SECRET`.
+- Monitor image-generation latency, cache hit rate, failures, and generated image count.
+
+Do not commit real `.env` files, API keys, local databases, generated image caches, or Android build outputs.
+
+## Repository
+
+GitHub:
+
+```text
+https://github.com/Damen-C/MenuLens-v2
+```

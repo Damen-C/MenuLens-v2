@@ -35,6 +35,12 @@ except ImportError:
 
 load_dotenv()
 
+_LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").strip().upper()
+logging.basicConfig(
+    level=getattr(logging, _LOG_LEVEL, logging.INFO),
+    format="%(levelname)s:%(name)s:%(message)s",
+)
+
 
 class DetectedType(BaseModel):
     type: str
@@ -90,6 +96,7 @@ class GenerateDishImageRequest(BaseModel):
 
 app = FastAPI(title="MenuLens API", version="0.2.0")
 logger = logging.getLogger("menulens")
+logger.setLevel(getattr(logging, _LOG_LEVEL, logging.INFO))
 _generated_image_count = 0
 _ENABLE_FIREBASE_AUTH = os.getenv("ENABLE_FIREBASE_AUTH", "false").strip().lower() == "true"
 _FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID", "").strip()

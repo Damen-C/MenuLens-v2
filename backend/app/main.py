@@ -566,10 +566,11 @@ async def scan_menu(
 
         total_latency_ms = int((time.perf_counter() - scan_start) * 1000)
         logger.info(
-            "scan_menu completed. mode=%s items=%s elapsed_ms=%s",
+            "scan_menu completed. mode=%s items=%s elapsed_ms=%s stage_latency_ms=%s",
             ocr_pipeline_mode,
             len(items),
             total_latency_ms,
+            stage_latency_ms,
         )
         coverage_ratio = min(1.0, len(items) / estimated_candidates) if estimated_candidates > 0 else None
         return ScanMenuResponse(

@@ -19,7 +19,7 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "0.1.0"
-        buildConfigField("String", "API_BASE_URL", "\"http://192.168.0.44:8000/\"")
+        buildConfigField("String", "API_BASE_URL", "\"https://menulens-api-606977095265.asia-northeast1.run.app/\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

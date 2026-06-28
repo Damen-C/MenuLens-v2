@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.menulens.app.data.EntitlementState
 import com.menulens.app.data.EntitlementStore
+import com.menulens.app.data.RevealedHistoryStore
 import com.menulens.app.data.ScanRepository
 import com.menulens.app.model.MenuItem
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -56,6 +57,7 @@ sealed interface ResultsNavEvent {
 class ResultsViewModel(application: Application) : AndroidViewModel(application) {
     private val entitlementStore = EntitlementStore(application.applicationContext)
     private val scanRepository = ScanRepository(application.applicationContext)
+    private val revealedHistoryStore = RevealedHistoryStore(application.applicationContext)
 
     private val unlockedItemIds = MutableStateFlow<Set<String>>(emptySet())
     private val imageStates = MutableStateFlow<Map<String, DishImageState>>(emptyMap())
@@ -209,6 +211,7 @@ class ResultsViewModel(application: Application) : AndroidViewModel(application)
 
             RevealDecision.OPEN_WITH_PRO -> {
                 unlockedItemIds.update { it + itemId }
+                saveRevealedDish(itemId)
                 _navEvents.emit(ResultsNavEvent.OpenDetail(itemId))
                 requestDishImageIfNeeded(itemId)
             }
@@ -217,6 +220,7 @@ class ResultsViewModel(application: Application) : AndroidViewModel(application)
                 val consumed = entitlementStore.tryConsumeCredit()
                 if (consumed) {
                     unlockedItemIds.update { it + itemId }
+                    saveRevealedDish(itemId)
                     _navEvents.emit(ResultsNavEvent.OpenDetail(itemId))
                     requestDishImageIfNeeded(itemId)
                 } else {
@@ -246,6 +250,7 @@ class ResultsViewModel(application: Application) : AndroidViewModel(application)
             try {
                 val localPath = scanRepository.generateDishImage(itemId, token)
                 imageStates.update { it + (itemId to DishImageState.Ready(localPath)) }
+                revealedHistoryStore.updateImagePath(item, localPath)
             } catch (exc: Exception) {
                 imageStates.update {
                     it + (
@@ -255,6 +260,17 @@ class ResultsViewModel(application: Application) : AndroidViewModel(application)
                     )
                 }
             }
+        }
+    }
+
+    private fun saveRevealedDish(itemId: String) {
+        val item = scannedItems.value.firstOrNull { it.itemId == itemId } ?: return
+        val imagePath = when (val state = imageStates.value[itemId]) {
+            is DishImageState.Ready -> state.localPath
+            else -> scanRepository.cachedDishImagePath(itemId)
+        }
+        viewModelScope.launch {
+            revealedHistoryStore.saveRevealedDish(item, imagePath)
         }
     }
 }

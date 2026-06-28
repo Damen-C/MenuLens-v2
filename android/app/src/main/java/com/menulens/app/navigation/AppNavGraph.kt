@@ -13,9 +13,11 @@ import androidx.navigation.navArgument
 import com.menulens.app.ui.screens.DetailScreen
 import com.menulens.app.ui.screens.PaywallScreen
 import com.menulens.app.ui.screens.ProcessingScreen
+import com.menulens.app.ui.screens.RevealedHistoryScreen
 import com.menulens.app.ui.screens.ResultsScreen
 import com.menulens.app.ui.screens.ScanScreen
 import com.menulens.app.ui.screens.ShowToStaffScreen
+import com.menulens.app.viewmodel.RevealedHistoryViewModel
 import com.menulens.app.viewmodel.ResultsNavEvent
 import com.menulens.app.viewmodel.ResultsViewModel
 
@@ -23,7 +25,9 @@ import com.menulens.app.viewmodel.ResultsViewModel
 fun AppNavGraph() {
     val navController = rememberNavController()
     val resultsViewModel: ResultsViewModel = viewModel()
+    val revealedHistoryViewModel: RevealedHistoryViewModel = viewModel()
     val uiState = resultsViewModel.uiState.collectAsState()
+    val historyEntries = revealedHistoryViewModel.entries.collectAsState()
 
     LaunchedEffect(Unit) {
         resultsViewModel.navEvents.collect { event ->
@@ -45,6 +49,19 @@ fun AppNavGraph() {
                     resultsViewModel.startNewScanSession()
                     resultsViewModel.queueScanImage(imageBytes)
                     navController.navigate(Route.Processing.value)
+                },
+                onViewRevealedHistory = {
+                    navController.navigate(Route.RevealedHistory.value)
+                }
+            )
+        }
+        composable(Route.RevealedHistory.value) {
+            RevealedHistoryScreen(
+                entries = historyEntries.value,
+                onBack = { navController.popBackStack() },
+                onClearHistory = revealedHistoryViewModel::clearHistory,
+                onShowToStaff = { historyId ->
+                    navController.navigate(Route.HistoryShowToStaff.create(historyId))
                 }
             )
         }
@@ -90,6 +107,17 @@ fun AppNavGraph() {
             ShowToStaffScreen(
                 jpText = item?.jpText.orEmpty(),
                 priceText = item?.priceText
+            )
+        }
+        composable(
+            route = Route.HistoryShowToStaff.value,
+            arguments = listOf(navArgument("historyId") { type = NavType.StringType })
+        ) {
+            val historyId = it.arguments?.getString("historyId").orEmpty()
+            val entry = revealedHistoryViewModel.entryById(historyId)
+            ShowToStaffScreen(
+                jpText = entry?.jpText.orEmpty(),
+                priceText = entry?.priceText
             )
         }
         composable(Route.Paywall.value) {

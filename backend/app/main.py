@@ -22,8 +22,9 @@ from app.image_generation import (
     is_generatable_dish,
     verify_image_generation_token,
 )
+from app.play_billing import PlayBillingVerificationError, PlayBillingVerifier
 from app.prompts.registry import get_active_prompt_version, render_prompt
-from app.usage import UsageStore
+from app.usage import create_usage_store
 
 try:
     import firebase_admin
@@ -94,6 +95,19 @@ class GenerateDishImageRequest(BaseModel):
     image_generation_token: str
 
 
+class VerifyGooglePlayPurchaseRequest(BaseModel):
+    purchase_token: str
+    product_id: str | None = None
+
+
+class VerifyGooglePlayPurchaseResponse(BaseModel):
+    plan: str
+    active: bool
+    product_id: str | None
+    subscription_state: str
+    pro_expires_at: str | None = None
+
+
 app = FastAPI(title="MenuLens API", version="0.2.0")
 logger = logging.getLogger("menulens")
 logger.setLevel(getattr(logging, _LOG_LEVEL, logging.INFO))
@@ -120,11 +134,25 @@ def _env_int(name: str, default: int) -> int:
 
 _FREE_SCAN_LIMIT_PER_MONTH = _env_int("FREE_SCAN_LIMIT_PER_MONTH", 10)
 _PRO_SCAN_LIMIT_PER_MONTH = _env_int("PRO_SCAN_LIMIT_PER_MONTH", 250)
+_USAGE_STORE_BACKEND = os.getenv("USAGE_STORE_BACKEND", "sqlite").strip().lower()
 _SCAN_USAGE_DB_PATH = os.getenv("SCAN_USAGE_DB_PATH", "scan_usage.db").strip() or "scan_usage.db"
-_usage_store = UsageStore(
+_FIRESTORE_PROJECT_ID = os.getenv("FIRESTORE_PROJECT_ID", "").strip() or None
+_FIRESTORE_DATABASE = os.getenv("FIRESTORE_DATABASE", "").strip() or None
+_FIRESTORE_USAGE_COLLECTION = os.getenv("FIRESTORE_USAGE_COLLECTION", "menulens_subjects").strip() or "menulens_subjects"
+_PLAY_PACKAGE_NAME = os.getenv("PLAY_PACKAGE_NAME", "").strip()
+_PLAY_PRO_PRODUCT_IDS = {
+    value.strip()
+    for value in os.getenv("PLAY_PRO_PRODUCT_IDS", "").split(",")
+    if value.strip()
+}
+_usage_store = create_usage_store(
+    backend=_USAGE_STORE_BACKEND,
     db_path=_SCAN_USAGE_DB_PATH,
     free_quota=_FREE_SCAN_LIMIT_PER_MONTH,
     pro_quota=_PRO_SCAN_LIMIT_PER_MONTH,
+    firestore_project_id=_FIRESTORE_PROJECT_ID,
+    firestore_database=_FIRESTORE_DATABASE,
+    firestore_root_collection=_FIRESTORE_USAGE_COLLECTION,
 )
 
 
@@ -179,6 +207,13 @@ def _resolve_authenticated_uid(authorization: str | None) -> str | None:
             raise HTTPException(status_code=401, detail="Firebase token did not include uid")
         return None
     return str(uid)
+
+
+def _require_authenticated_uid(authorization: str | None) -> str:
+    uid = _resolve_authenticated_uid(authorization)
+    if not uid:
+        raise HTTPException(status_code=401, detail="Firebase authentication is required")
+    return uid
 
 
 def _require_env(name: str) -> str:
@@ -679,4 +714,46 @@ async def generate_dish_image(
             "X-MenuLens-Image-Cache": "hit" if result.cache_hit else "miss",
             "X-MenuLens-Image-Model": result.model,
         },
+    )
+
+
+@app.post("/v1/entitlements/google_play", response_model=VerifyGooglePlayPurchaseResponse)
+async def verify_google_play_purchase(
+    request: VerifyGooglePlayPurchaseRequest,
+    authorization: str | None = Header(default=None),
+) -> VerifyGooglePlayPurchaseResponse:
+    uid = _require_authenticated_uid(authorization)
+    try:
+        verification = PlayBillingVerifier(
+            package_name=_PLAY_PACKAGE_NAME,
+            pro_product_ids=_PLAY_PRO_PRODUCT_IDS,
+        ).verify_subscription(
+            purchase_token=request.purchase_token,
+            product_id=request.product_id,
+        )
+    except PlayBillingVerificationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    subject_key = f"uid:{uid}"
+    if verification.active:
+        _usage_store.set_plan(subject_key=subject_key, plan="pro", pro_expires_at=verification.expires_at)
+        plan = "pro"
+    else:
+        _usage_store.set_plan(subject_key=subject_key, plan="free", pro_expires_at=None)
+        plan = "free"
+
+    logger.info(
+        "Google Play entitlement synced. uid=%s plan=%s product_id=%s state=%s expires_at=%s",
+        uid,
+        plan,
+        verification.product_id,
+        verification.subscription_state,
+        verification.expires_at,
+    )
+    return VerifyGooglePlayPurchaseResponse(
+        plan=plan,
+        active=verification.active,
+        product_id=verification.product_id,
+        subscription_state=verification.subscription_state,
+        pro_expires_at=verification.expires_at if verification.active else None,
     )

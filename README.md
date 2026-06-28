@@ -146,10 +146,19 @@ The backend is designed for Google Cloud Run.
 
 Recommended production settings:
 
+- Use Firebase Auth for production requests.
+- Use Firestore for quota and entitlement state instead of local SQLite.
+- Verify Google Play purchase tokens on the backend before granting Pro.
 - Keep `IMAGE_GENERATION_ENABLED` behind an environment flag for rollback.
 - Use `GENERATED_IMAGE_BUCKET` for Cloud Storage image caching.
 - Use a strong `IMAGE_TOKEN_SECRET`.
 - Monitor image-generation latency, cache hit rate, failures, and generated image count.
+
+For the first product-readiness backend milestone, see:
+
+```text
+docs/BACKEND_PRODUCT_MILESTONE.md
+```
 
 Do not commit real `.env` files, API keys, local databases, generated image caches, or Android build outputs.
 

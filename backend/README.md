@@ -15,6 +15,7 @@ Required scan settings:
 
 - `GOOGLE_CLOUD_VISION_API_KEY`
 - `GEMINI_API_KEY`
+- `ENABLE_FIREBASE_AUTH=true` requires every scan/image/entitlement request to include a valid Firebase bearer token.
 
 Image generation settings:
 
@@ -61,6 +62,56 @@ failures and timeouts return `502`.
 
 Generated images use a fixed 4:3, 1K prompt and are illustrative references.
 The Android client labels them: “AI-generated reference · Actual presentation may vary.”
+
+## Product backend settings
+
+Local development defaults to SQLite quota storage:
+
+```env
+USAGE_STORE_BACKEND=sqlite
+SCAN_USAGE_DB_PATH=scan_usage.db
+```
+
+Production Cloud Run should use Firestore so quota and plan state are shared
+across instances:
+
+```env
+ENABLE_FIREBASE_AUTH=true
+USAGE_STORE_BACKEND=firestore
+FIRESTORE_PROJECT_ID=<your-gcp-project-id>
+FIRESTORE_USAGE_COLLECTION=menulens_subjects
+FREE_SCAN_LIMIT_PER_MONTH=10
+PRO_SCAN_LIMIT_PER_MONTH=250
+```
+
+### `POST /v1/entitlements/google_play`
+
+Verifies a Google Play subscription purchase token, then updates the Firebase
+user's backend entitlement.
+
+Headers:
+
+```text
+Authorization: Bearer <firebase_id_token>
+```
+
+JSON body:
+
+```json
+{
+  "purchase_token": "<token from Google Play Billing>",
+  "product_id": "menulens_pro_monthly"
+}
+```
+
+Required settings:
+
+```env
+PLAY_PACKAGE_NAME=com.menulens.app
+PLAY_PRO_PRODUCT_IDS=menulens_pro_monthly
+```
+
+See `docs/BACKEND_PRODUCT_MILESTONE.md` for the full learning checklist.
 
 ## Tests
 

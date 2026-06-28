@@ -4,6 +4,14 @@ MenuLens v2 is an Android app and FastAPI backend for reading Japanese restauran
 
 The design direction is intentionally quiet: warm paper surfaces, charcoal text, restrained vermilion, and a minimal Japanese editorial feel.
 
+## Demo
+
+A short walkthrough of the current app flow: scan a Japanese menu, review locked results, reveal a dish, view an AI-generated reference image, and show the Japanese-only staff card.
+
+<video src="docs/menulens-demo.mp4" controls width="360" title="MenuLens v2 demo"></video>
+
+If the embedded video does not render, [watch the MP4 demo](docs/menulens-demo.mp4).
+
 ## What it does
 
 - Scans Japanese menu photos with Google Cloud Vision OCR.

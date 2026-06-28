@@ -8,7 +8,7 @@ The design direction is intentionally quiet: warm paper surfaces, charcoal text,
 
 A short walkthrough of the current app flow: scan a Japanese menu, review locked results, reveal a dish, view an AI-generated reference image, and show the Japanese-only staff card.
 
-https://github.com/user-attachments/assets/8311a799-83b2-44c0-8a68-541393eb94a4
+https://github.com/user-attachments/assets/92051b54-61f1-490d-9d7e-ca8399a5d257
 
 ## What it does
 
